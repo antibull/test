@@ -15,6 +15,9 @@ public class GetTenderAttributesSteps {
     @Step("Для одного из тендеров этого списка получить его описание(атрибуты тендера)")
     public void getTenderAttributes(){
         HashMap<String, String> params = new HashMap<>();
+
+        //Поскольку не было найдено, где получается значение key,
+        //оно было взято из примеров
         params.put("_key","1732ede4de680a0c93d81f01d7bac7d1");
         params.put("id","441286");
         params.put("company_id","220714");

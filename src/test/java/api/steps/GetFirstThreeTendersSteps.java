@@ -7,8 +7,7 @@ import java.util.HashMap;
 
 import static api.httpmethods.GET.getWithParams;
 import static endpoints.APIEndpoints.getFirstThreeTenders;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 
 public class GetFirstThreeTendersSteps {
     private Response response;
@@ -17,6 +16,8 @@ public class GetFirstThreeTendersSteps {
     public void getFirstThreeTenders(){
         HashMap<String, String> params = new HashMap<>();
 
+        //Поскольку не было найдено, где получается значение key,
+        //оно было взято из примеров
         params.put("_key","1732ede4de680a0c93d81f01d7bac7d1");
         params.put("set_type_id","1");
         params.put("set_id","220714");
@@ -25,9 +26,10 @@ public class GetFirstThreeTendersSteps {
 
         response = getWithParams(getFirstThreeTenders, params);
         //Проверяется, что в джейсоне пришел положительный результат
-        //и принят верный параметр на кол-во строк
+        //и принят верный параметр на кол-во строк и вернулся верный размер массива
         response.then().statusCode(200).and().body("success", equalTo("true"))
-        .and().body("result.args.max_rows", equalTo("3"));
+        .and().body("result.args.max_rows", equalTo("3"))
+        .and().body("result.data", hasSize(equalTo(3)));
     }
 
 }
