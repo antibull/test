@@ -10,7 +10,60 @@ http://www.tender.pro/api/_tender.info.json?_key=1732ede4de680a0c93d81f01d7bac7d
 http://www.tender.pro/api/_company.info_public.json?id=220714
 
 ### Часть 2 (Работа с SQL) ###
-
+В блоке cpm_in_blocks получаем design_id и их СРМ<br/>
+В блоке max_cpm_in_blocks получаем макс. значением СРМ design_id<br/>
+В последнем блоке получаем итоговые значения путем сочетания 1 и 2 блока<br/>
+<br/>
+with cpm_in_blocks as ( <br/>
+select u.user_id,<br/>
+st.site_id,<br/>
+sa.site_area_id,<br/>
+sdc.design_id,<br/>
+sum(sdc.partner_gain)/sum(sdc.view_count)*1000 cpm<br/>
+from user1 u,<br/>
+site st,<br/>
+site_area sa,<br/>
+site_area_design_1 sad,<br/>
+stat_design_cache sdc<br/>
+where u.user_id = st.user_id<br/>
+and st.site_id = sa.parent_id<br/>
+and sa.site_area_id = sad.site_area_id<br/>
+and sad.site_area_design_1_id = sdc.design_id<br/>
+group by sdc.design_id<br/>
+),<br/>
+<br/>
+max_cpm_in_blocks as (<br/>
+select cib.user_id,<br/>
+cib.site_id,<br/>
+cib.site_area_id,<br/>
+max(cib.cpm) max_cpm<br/>
+from cpm_in_blocks cib<br/>
+group by cib.site_area_id<br/>
+)<br/>
+<br/>
+select cib.user_id,<br/>
+cib.site_id,<br/>
+cib.site_area_id,<br/>
+cib.design_id,<br/>
+round(cib.cpm, 3)<br/>
+from cpm_in_blocks cib<br/>
+where cib.design_id = (<br/>
+select cib2.design_id<br/>
+from cpm_in_blocks cib2<br/>
+where cib2.user_id = cib.user_id<br/>
+and cib2.site_id = cib.site_id<br/>
+and cib2.site_area_id = cib.site_area_id<br/>
+and cib2.cpm = (<br/>
+select mcib.max_cpm<br/>
+from max_cpm_in_blocks mcib<br/>
+where mcib.user_id = cib2.user_id<br/>
+and mcib.site_id = cib2.site_id<br/>
+and mcib.site_area_id = cib2.site_area_id<br/>
+)<br/>
+order by 1 asc<br/>
+limit 1<br/>
+)<br/>
+order by 1 asc;<br/>
 ### Часть 3 ( Автоматизация тестирования ) ###
 Для запуска api тестов необходимо ввести: mvn clean verify -Dtags="api"<br/>
 Для запуска ui теста необходимо ввести: mvn clean verify -Dtags="ui" <br/>
